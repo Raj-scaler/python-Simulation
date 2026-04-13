@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Python Loops — Workflow Diagrams</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1419;
+    color: #e0e0e0;
+    padding: 8px 12px;
+    overflow: hidden;
+    height: 100vh;
+  }
+  h1 { text-align:center; color:#ffd166; margin:0; font-size:16px; }
+  .subtitle { text-align:center; color:#8b9fb3; margin:2px 0 6px; font-size:11px; }
+  .tabs { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:8px; }
+  .tab {
+    padding:6px 12px; background:#1e2936; border:1px solid #2d3e50; color:#e0e0e0;
+    border-radius:6px; cursor:pointer; font-size:12px;
+  }
+  .tab:hover { background:#2a3a4a; }
+  .tab.active { background:#ffd166; color:#0f1419; font-weight:bold; border-color:#ffd166; }
+  .panel { display:none; max-width:1400px; margin:0 auto; width:100%; height: calc(100vh - 110px); }
+  .panel.active { display:block; }
+  .layout { display:grid; grid-template-columns: 1fr 340px; gap:12px; height:100%; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .card {
+    background:#1a2332; border-radius:10px; padding:10px 12px;
+    border:1px solid #2d3e50; box-shadow:0 4px 12px rgba(0,0,0,.4);
+    overflow: hidden;
+    display:flex; flex-direction:column;
+    height: 100%;
+  }
+  .layout > .card:last-child { overflow-y:auto; }
+  .card h3 { margin:0 0 6px 0; color:#06d6a0; font-size:13px; }
+  svg { width:100%; flex:1; min-height:0; display:block; background:#0f1419; border-radius:6px; }
+  .node rect, .node polygon, .node ellipse { transition: all .4s ease; }
+  .node.active rect, .node.active polygon, .node.active ellipse {
+    fill:#ef476f !important; stroke:#ffd166 !important; stroke-width:3 !important;
+    filter: drop-shadow(0 0 8px #ef476f);
+  }
+  .node.done rect, .node.done polygon, .node.done ellipse {
+    fill:#06d6a055 !important; stroke:#06d6a0 !important;
+  }
+  .node text { fill:#e0e0e0; font-family:'Segoe UI',sans-serif; font-size:13px; font-weight:500; pointer-events:none; }
+  .edge { stroke:#4a5a6a; stroke-width:2; fill:none; marker-end:url(#arrow); transition: all .3s; }
+  .edge.active { stroke:#ffd166; stroke-width:3; }
+  .edge-label { fill:#8b9fb3; font-size:11px; font-family:'Segoe UI'; }
+  .edge-label.active { fill:#ffd166; font-weight:bold; }
+  .controls { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; align-items:center; flex-shrink:0; }
+  button.btn {
+    padding:6px 10px; background:#ef476f; color:white; border:none;
+    border-radius:5px; cursor:pointer; font-size:12px; font-weight:600;
+  }
+  button.btn:hover { opacity:.85; }
+  button.btn.alt { background:#118ab2; }
+  button.btn.go { background:#06d6a0; color:#0f1419; }
+  input[type=number] {
+    padding:5px; background:#0f1419; color:#fff; border:1px solid #2d3e50;
+    border-radius:5px; width:55px; font-size:12px;
+  }
+  label { font-size:11px; color:#8b9fb3; margin-right:2px; }
+  .right-scroll { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+  .vars { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; flex-shrink:0; }
+  .var-box {
+    background:#0f1419; padding:4px 8px; border-radius:5px;
+    border:2px solid #06d6a0; min-width:55px; text-align:center;
+  }
+  .var-box .name { font-size:10px; color:#8b9fb3; }
+  .var-box .val { font-size:14px; font-weight:bold; color:#ffd166; }
+  .output {
+    background:#0a0e13; padding:8px; border-radius:5px; margin-top:6px;
+    font-family:'Courier New',monospace; min-height:40px; max-height:90px;
+    overflow-y:auto; color:#06d6a0; border:1px solid #2d3e50; font-size:12px;
+    white-space:pre-wrap; flex-shrink:0;
+  }
+  .status {
+    padding:6px 8px; border-radius:5px; margin-top:6px; font-size:11px;
+    background:#0f1419; border-left:3px solid #118ab2; flex-shrink:0;
+  }
+  .status.true { border-left-color:#06d6a0; }
+  .status.false { border-left-color:#ef476f; }
+  .legend { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; font-size:10px; color:#8b9fb3; flex-shrink:0; }
+  .legend span { display:flex; align-items:center; gap:4px; }
+  .legend .dot { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  .mini-title { font-size:12px; color:#06d6a0; margin:6px 0 2px; font-weight:600; }
+  .pipeline-step {
+    padding:4px 8px; margin:3px 0; background:#0f1419; border-radius:4px;
+    border-left:2px solid #2d3e50; font-size:11px; display:flex; gap:6px; align-items:center;
+  }
+  .pipeline-step.active { border-left-color:#ffd166; background:#ffd16611; }
+  .pipeline-step .num {
+    width:18px; height:18px; border-radius:50%; background:#2d3e50;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold;
+  }
+  .pipeline-step.active .num { background:#ffd166; color:#0f1419; }
+</style>
+</head>
+<body>
+
+<h1>🔀 Python Loops — Workflow Diagrams</h1>
+<p class="subtitle">See the exact execution pipeline as arrows light up with each step</p>
+
+<div class="tabs">
+  <button class="tab active" data-tab="while">While Loop</button>
+  <button class="tab" data-tab="break">Break</button>
+  <button class="tab" data-tab="continue">Continue</button>
+  <button class="tab" data-tab="for">For Loop</button>
+  <button class="tab" data-tab="nested">Nested Loops</button>
+</div>
+
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5a6a"/>
+    </marker>
+    <marker id="arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ffd166"/>
+    </marker>
+  </defs>
+</svg>
+
+<!-- ============ WHILE ============ -->
+<div class="panel active" id="panel-while">
+  <div class="layout">
+    <div class="card">
+      <h3>Workflow: while count &lt;= n</h3>
+      <svg viewBox="0 0 500 620" id="svg-while">
+        <!-- Start -->
+        <g class="node" id="w-start">
+          <ellipse cx="250" cy="40" rx="70" ry="25" fill="#118ab2" stroke="#1aa5d4" stroke-width="2"/>
+          <text x="250" y="45" text-anchor="middle">START</text>
+        </g>
+        <!-- Init -->
+        <g class="node" id="w-init">
+          <rect x="170" y="100" width="160" height="50" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/>
+          <text x="250" y="122" text-anchor="middle">1️⃣ Initialize</text>
+          <text x="250" y="140" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">count = 1</text>
+        </g>
+        <!-- Condition diamond -->
+        <g class="node" id="w-cond">
+          <polygon points="250,190 360,260 250,330 140,260" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/>
+          <text x="250" y="255" text-anchor="middle">2️⃣ Condition</text>
+          <text x="250" y="275" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">count &lt;= n ?</text>
+        </g>
+        <!-- Action -->
+        <g class="node" id="w-action">
+          <rect x="170" y="370" width="160" height="50" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/>
+          <text x="250" y="392" text-anchor="middle">3️⃣ Action</text>
+          <text x="250" y="410" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">print(count)</text>
+        </g>
+        <!-- Update -->
+        <g class="node" id="w-update">
+          <rect x="170" y="450" width="160" height="50" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/>
+          <text x="250" y="472" text-anchor="middle">4️⃣ Update</text>
+          <text x="250" y="490" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">count += 1</text>
+        </g>
+        <!-- End -->
+        <g class="node" id="w-end">
+          <ellipse cx="250" cy="570" rx="70" ry="25" fill="#ef476f" stroke="#ff6b8a" stroke-width="2"/>
+          <text x="250" y="575" text-anchor="middle">END</text>
+        </g>
+        <!-- Edges -->
+        <path class="edge" id="w-e1" d="M250,65 L250,100"/>
+        <path class="edge" id="w-e2" d="M250,150 L250,190"/>
+        <path class="edge" id="w-e3" d="M250,330 L250,370"/>
+        <text class="edge-label" id="w-e3-l" x="260" y="355">TRUE</text>
+        <path class="edge" id="w-e4" d="M250,420 L250,450"/>
+        <path class="edge" id="w-e5" d="M170,475 Q60,475 60,260 Q60,190 140,220" />
+        <text class="edge-label" x="20" y="360">loop back</text>
+        <path class="edge" id="w-e6" d="M360,260 Q450,260 450,570 L320,570"/>
+        <text class="edge-label" id="w-e6-l" x="420" y="280">FALSE</text>
+      </svg>
+      <div class="legend">
+        <span><span class="dot" style="background:#ef476f;"></span>currently executing</span>
+        <span><span class="dot" style="background:#06d6a055;border:1px solid #06d6a0;"></span>completed</span>
+        <span><span class="dot" style="background:#2d3e50;border:1px solid #4a5a6a;"></span>pending</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Execution State</h3>
+      <div class="controls">
+        <label>n =</label><input type="number" id="n-while" value="4" min="1" max="10">
+        <button class="btn go" onclick="W.start()">▶ Auto</button>
+        <button class="btn alt" onclick="W.step()">Step</button>
+        <button class="btn" onclick="W.reset()">Reset</button>
+      </div>
+      <div class="vars" id="vars-while"></div>
+      <div class="status" id="status-while">Ready. Click Start.</div>
+      <h3 style="margin-top:16px;">Output</h3>
+      <div class="output" id="out-while"></div>
+      <h3 style="margin-top:16px;">Pipeline Trace</h3>
+      <div id="pipe-while"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BREAK ============ -->
+<div class="panel" id="panel-break">
+  <div class="layout">
+    <div class="card">
+      <h3>Workflow: break exits immediately</h3>
+      <svg viewBox="0 0 500 700" id="svg-break">
+        <g class="node" id="b-start"><ellipse cx="250" cy="40" rx="70" ry="25" fill="#118ab2" stroke="#1aa5d4" stroke-width="2"/><text x="250" y="45" text-anchor="middle">START</text></g>
+        <g class="node" id="b-init"><rect x="170" y="90" width="160" height="45" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="117" text-anchor="middle">count = 1</text></g>
+        <g class="node" id="b-cond"><polygon points="250,170 360,230 250,290 140,230" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="225" text-anchor="middle">count &lt;= 100?</text></g>
+        <g class="node" id="b-if"><polygon points="250,330 360,390 250,450 140,390" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="385" text-anchor="middle">count == 4?</text></g>
+        <g class="node" id="b-break"><rect x="370" y="370" width="110" height="40" rx="8" fill="#ef476f22" stroke="#ef476f" stroke-width="2"/><text x="425" y="395" text-anchor="middle" style="fill:#ef476f;">BREAK 💥</text></g>
+        <g class="node" id="b-print"><rect x="170" y="480" width="160" height="40" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="505" text-anchor="middle">print(count)</text></g>
+        <g class="node" id="b-upd"><rect x="170" y="540" width="160" height="40" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="565" text-anchor="middle">count += 1</text></g>
+        <g class="node" id="b-end"><ellipse cx="250" cy="650" rx="70" ry="25" fill="#ef476f" stroke="#ff6b8a" stroke-width="2"/><text x="250" y="655" text-anchor="middle">END</text></g>
+
+        <path class="edge" id="b-e1" d="M250,65 L250,90"/>
+        <path class="edge" id="b-e2" d="M250,135 L250,170"/>
+        <path class="edge" id="b-e3" d="M250,290 L250,330"/><text class="edge-label" x="260" y="315">TRUE</text>
+        <path class="edge" id="b-e4" d="M360,390 L370,390"/><text class="edge-label" x="330" y="385">TRUE</text>
+        <path class="edge" id="b-e5" d="M250,450 L250,480"/><text class="edge-label" x="260" y="470">FALSE</text>
+        <path class="edge" id="b-e6" d="M250,520 L250,540"/>
+        <path class="edge" id="b-e7" d="M170,560 Q50,560 50,230 Q50,180 140,200"/>
+        <path class="edge" id="b-e8" d="M425,410 Q425,650 320,650"/>
+        <path class="edge" id="b-e9" d="M360,230 Q470,230 470,650 L320,650"/><text class="edge-label" x="440" y="250">FALSE</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Execution State</h3>
+      <div class="controls">
+        <button class="btn go" onclick="B.start()">▶ Auto</button>
+        <button class="btn alt" onclick="B.step()">Step</button>
+        <button class="btn" onclick="B.reset()">Reset</button>
+      </div>
+      <div class="vars" id="vars-break"></div>
+      <div class="status" id="status-break">Watch how break jumps straight to END, skipping everything below it.</div>
+      <h3 style="margin-top:16px;">Output</h3>
+      <div class="output" id="out-break"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONTINUE ============ -->
+<div class="panel" id="panel-continue">
+  <div class="layout">
+    <div class="card">
+      <h3>Workflow: continue skips back to condition</h3>
+      <svg viewBox="0 0 500 700" id="svg-continue">
+        <g class="node" id="c-start"><ellipse cx="250" cy="40" rx="70" ry="25" fill="#118ab2" stroke="#1aa5d4" stroke-width="2"/><text x="250" y="45" text-anchor="middle">START</text></g>
+        <g class="node" id="c-init"><rect x="170" y="90" width="160" height="45" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="117" text-anchor="middle">count = 1</text></g>
+        <g class="node" id="c-cond"><polygon points="250,170 360,230 250,290 140,230" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="225" text-anchor="middle">count &lt;= 10?</text></g>
+        <g class="node" id="c-upd"><rect x="170" y="320" width="160" height="40" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="345" text-anchor="middle">count += 1</text></g>
+        <g class="node" id="c-if"><polygon points="250,390 360,450 250,510 140,450" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="445" text-anchor="middle">count == 4?</text></g>
+        <g class="node" id="c-cont"><rect x="370" y="430" width="110" height="40" rx="8" fill="#ffd16622" stroke="#ffd166" stroke-width="2"/><text x="425" y="455" text-anchor="middle" style="fill:#ffd166;">CONTINUE ↩</text></g>
+        <g class="node" id="c-print"><rect x="170" y="540" width="160" height="40" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="565" text-anchor="middle">print(count)</text></g>
+        <g class="node" id="c-end"><ellipse cx="250" cy="650" rx="70" ry="25" fill="#ef476f" stroke="#ff6b8a" stroke-width="2"/><text x="250" y="655" text-anchor="middle">END</text></g>
+
+        <path class="edge" id="c-e1" d="M250,65 L250,90"/>
+        <path class="edge" id="c-e2" d="M250,135 L250,170"/>
+        <path class="edge" id="c-e3" d="M250,290 L250,320"/><text class="edge-label" x="260" y="310">TRUE</text>
+        <path class="edge" id="c-e4" d="M250,360 L250,390"/>
+        <path class="edge" id="c-e5" d="M360,450 L370,450"/><text class="edge-label" x="330" y="445">TRUE</text>
+        <path class="edge" id="c-e6" d="M250,510 L250,540"/><text class="edge-label" x="260" y="530">FALSE</text>
+        <path class="edge" id="c-e7" d="M170,560 Q40,560 40,230 Q40,180 140,200"/>
+        <path class="edge" id="c-e8" d="M425,430 Q425,230 360,230"/><text class="edge-label" x="430" y="330">jump</text>
+        <path class="edge" id="c-e9" d="M360,230 Q480,230 480,650 L320,650"/><text class="edge-label" x="440" y="260">FALSE</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Execution State</h3>
+      <div class="controls">
+        <button class="btn go" onclick="C.start()">▶ Auto</button>
+        <button class="btn alt" onclick="C.step()">Step</button>
+        <button class="btn" onclick="C.reset()">Reset</button>
+      </div>
+      <div class="vars" id="vars-continue"></div>
+      <div class="status" id="status-continue">Notice: when count==4, the arrow jumps BACK to the condition — skipping print.</div>
+      <h3 style="margin-top:16px;">Output</h3>
+      <div class="output" id="out-continue"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FOR ============ -->
+<div class="panel" id="panel-for">
+  <div class="layout">
+    <div class="card">
+      <h3>Workflow: for i in range(1, 6)</h3>
+      <svg viewBox="0 0 500 560" id="svg-for">
+        <g class="node" id="f-start"><ellipse cx="250" cy="40" rx="70" ry="25" fill="#118ab2" stroke="#1aa5d4" stroke-width="2"/><text x="250" y="45" text-anchor="middle">START</text></g>
+        <g class="node" id="f-iter"><rect x="150" y="90" width="200" height="55" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="112" text-anchor="middle">Build iterator</text><text x="250" y="130" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">range(1,6) → [1,2,3,4,5]</text></g>
+        <g class="node" id="f-next"><polygon points="250,180 380,250 250,320 120,250" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="245" text-anchor="middle">Has next value?</text><text x="250" y="263" text-anchor="middle" style="font-size:11px;fill:#8b9fb3;">i = next(iter)</text></g>
+        <g class="node" id="f-body"><rect x="170" y="360" width="160" height="50" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="382" text-anchor="middle">Loop body</text><text x="250" y="400" text-anchor="middle" style="font-size:12px;fill:#8b9fb3;">print(i)</text></g>
+        <g class="node" id="f-end"><ellipse cx="250" cy="500" rx="70" ry="25" fill="#ef476f" stroke="#ff6b8a" stroke-width="2"/><text x="250" y="505" text-anchor="middle">END</text></g>
+
+        <path class="edge" id="f-e1" d="M250,65 L250,90"/>
+        <path class="edge" id="f-e2" d="M250,145 L250,180"/>
+        <path class="edge" id="f-e3" d="M250,320 L250,360"/><text class="edge-label" x="260" y="345">YES</text>
+        <path class="edge" id="f-e4" d="M170,385 Q40,385 40,250 Q40,200 120,220"/><text class="edge-label" x="5" y="320">next</text>
+        <path class="edge" id="f-e5" d="M380,250 Q460,250 460,500 L320,500"/><text class="edge-label" x="430" y="275">DONE</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Iterator Pipeline</h3>
+      <div class="controls">
+        <button class="btn go" onclick="F.start()">▶ Auto</button>
+        <button class="btn alt" onclick="F.step()">Step</button>
+        <button class="btn" onclick="F.reset()">Reset</button>
+      </div>
+      <div id="iter-for" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;"></div>
+      <div class="status" id="status-for">The iterator hands i one value at a time.</div>
+      <h3 style="margin-top:16px;">Output</h3>
+      <div class="output" id="out-for"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NESTED ============ -->
+<div class="panel" id="panel-nested">
+  <div class="layout">
+    <div class="card">
+      <h3>Workflow: nested loops (outer × inner)</h3>
+      <svg viewBox="0 0 500 640" id="svg-nested">
+        <g class="node" id="n-start"><ellipse cx="250" cy="40" rx="70" ry="25" fill="#118ab2" stroke="#1aa5d4" stroke-width="2"/><text x="250" y="45" text-anchor="middle">START</text></g>
+        <g class="node" id="n-outer"><polygon points="250,100 390,160 250,220 110,160" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="155" text-anchor="middle">OUTER: row in rows?</text><text x="250" y="173" text-anchor="middle" style="font-size:11px;fill:#8b9fb3;">for row in range(R)</text></g>
+        <g class="node" id="n-inner"><polygon points="250,260 400,320 250,380 100,320" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="315" text-anchor="middle">INNER: i in cols?</text><text x="250" y="333" text-anchor="middle" style="font-size:11px;fill:#8b9fb3;">for i in range(1,C+1)</text></g>
+        <g class="node" id="n-body"><rect x="170" y="410" width="160" height="45" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="437" text-anchor="middle">print(i, end=" ")</text></g>
+        <g class="node" id="n-nl"><rect x="170" y="490" width="160" height="45" rx="8" fill="#2d3e50" stroke="#4a5a6a" stroke-width="2"/><text x="250" y="517" text-anchor="middle">print()  → newline</text></g>
+        <g class="node" id="n-end"><ellipse cx="250" cy="590" rx="70" ry="25" fill="#ef476f" stroke="#ff6b8a" stroke-width="2"/><text x="250" y="595" text-anchor="middle">END</text></g>
+
+        <path class="edge" id="n-e1" d="M250,65 L250,100"/>
+        <path class="edge" id="n-e2" d="M250,220 L250,260"/><text class="edge-label" x="260" y="245">YES</text>
+        <path class="edge" id="n-e3" d="M250,380 L250,410"/><text class="edge-label" x="260" y="400">YES</text>
+        <path class="edge" id="n-e4" d="M170,432 Q40,432 40,320 Q40,280 100,300"/><text class="edge-label" x="5" y="390">next i</text>
+        <path class="edge" id="n-e5" d="M400,320 Q460,320 460,510 L330,510"/><text class="edge-label" x="430" y="400">inner DONE</text>
+        <path class="edge" id="n-e6" d="M170,512 Q20,512 20,160 Q20,100 110,140"/><text class="edge-label" x="5" y="300">next row</text>
+        <path class="edge" id="n-e7" d="M390,160 Q480,160 480,590 L320,590"/><text class="edge-label" x="430" y="180">outer DONE</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Pattern Builder</h3>
+      <div class="controls">
+        <label>rows</label><input type="number" id="rows-n" value="3" min="1" max="6">
+        <label>cols</label><input type="number" id="cols-n" value="4" min="1" max="6">
+        <button class="btn go" onclick="N.start()">▶ Auto</button>
+        <button class="btn alt" onclick="N.step()">Step</button>
+        <button class="btn" onclick="N.reset()">Reset</button>
+      </div>
+      <div class="vars" id="vars-nested"></div>
+      <div class="status" id="status-nested">Outer picks row, inner fills columns, then newline, repeat.</div>
+      <h3 style="margin-top:16px;">Output</h3>
+      <div class="output" id="out-nested" style="font-family:'Courier New';font-size:18px;line-height:1.6;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+// SVG helpers
+function activate(svgId, nodeId) {
+  const svg = document.getElementById(svgId);
+  svg.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));
+  if(nodeId){const el=document.getElementById(nodeId); if(el)el.classList.add('active');}
+}
+function markDone(nodeId) {
+  const el=document.getElementById(nodeId); if(el){el.classList.remove('active');el.classList.add('done');}
+}
+function clearDone(svgId) {
+  document.getElementById(svgId).querySelectorAll('.node').forEach(n=>n.classList.remove('done','active'));
+}
+function activateEdge(svgId, edgeId) {
+  const svg=document.getElementById(svgId);
+  svg.querySelectorAll('.edge').forEach(e=>{e.classList.remove('active');e.setAttribute('marker-end','url(#arrow)');});
+  if(edgeId){const e=document.getElementById(edgeId); if(e){e.classList.add('active');e.setAttribute('marker-end','url(#arrow-a)');}}
+}
+function setVars(id, obj){
+  const c=document.getElementById(id); c.innerHTML='';
+  for(const [k,v] of Object.entries(obj)) c.innerHTML+=`<div class="var-box"><div class="name">${k}</div><div class="val">${v}</div></div>`;
+}
+function setStatus(id,txt,cls){const s=document.getElementById(id); s.className='status'+(cls?' '+cls:''); s.innerHTML=txt;}
+
+// =============== WHILE ===============
+const W = (() => {
+  let count,n,out,stage,timer,done,pipe;
+  function reset(){
+    clearInterval(timer); timer=null;
+    n=parseInt(document.getElementById('n-while').value)||4;
+    count=null; out=''; stage='start'; done=false; pipe=[];
+    clearDone('svg-while'); activateEdge('svg-while',null);
+    setVars('vars-while',{count:'—',n});
+    document.getElementById('out-while').textContent='';
+    document.getElementById('pipe-while').innerHTML='';
+    setStatus('status-while','Ready. n = '+n);
+  }
+  function addPipe(txt){
+    pipe.push(txt);
+    document.getElementById('pipe-while').innerHTML = pipe.map((p,i)=>
+      `<div class="pipeline-step ${i===pipe.length-1?'active':''}"><span class="num">${i+1}</span>${p}</div>`
+    ).join('');
+  }
+  function step(){
+    if(done)return;
+    if(stage==='start'){activate('svg-while','w-start'); activateEdge('svg-while','w-e1'); setStatus('status-while','Program starts'); stage='init'; return;}
+    if(stage==='init'){markDone('w-start'); activate('svg-while','w-init'); activateEdge('svg-while','w-e2'); count=1; setVars('vars-while',{count,n}); setStatus('status-while','Initialize count = 1','true'); addPipe('Initialize count=1'); stage='cond'; return;}
+    if(stage==='cond'){markDone('w-init'); activate('svg-while','w-cond'); const ok=count<=n; setStatus('status-while',`Check: ${count} ≤ ${n} → <b>${ok}</b>`, ok?'true':'false'); addPipe(`Check ${count}≤${n} = ${ok}`); stage=ok?'toaction':'toend'; return;}
+    if(stage==='toaction'){activateEdge('svg-while','w-e3'); stage='action'; return;}
+    if(stage==='action'){activate('svg-while','w-action'); activateEdge('svg-while','w-e4'); out+=count+'\n'; document.getElementById('out-while').textContent=out; setStatus('status-while','print('+count+')','true'); addPipe(`print(${count})`); stage='update'; return;}
+    if(stage==='update'){markDone('w-action'); activate('svg-while','w-update'); activateEdge('svg-while','w-e5'); count++; setVars('vars-while',{count,n}); setStatus('status-while','count → '+count+', loop back'); addPipe(`count = ${count}`); stage='cond'; return;}
+    if(stage==='toend'){activateEdge('svg-while','w-e6'); activate('svg-while','w-end'); setStatus('status-while','Condition false. END.','false'); addPipe('Exit loop'); done=true; clearInterval(timer);}
+  }
+  function start(){reset(); timer=setInterval(()=>{step(); if(done)clearInterval(timer);},750);}
+  return {reset,step,start};
+})();
+W.reset();
+
+// =============== BREAK ===============
+const B = (() => {
+  let count,out,stage,timer,done;
+  function reset(){
+    clearInterval(timer); timer=null;
+    count=null; out=''; stage='start'; done=false;
+    clearDone('svg-break'); activateEdge('svg-break',null);
+    setVars('vars-break',{count:'—'});
+    document.getElementById('out-break').textContent='';
+    setStatus('status-break','Ready.');
+  }
+  function step(){
+    if(done)return;
+    if(stage==='start'){activate('svg-break','b-start'); activateEdge('svg-break','b-e1'); stage='init'; return;}
+    if(stage==='init'){markDone('b-start'); activate('svg-break','b-init'); activateEdge('svg-break','b-e2'); count=1; setVars('vars-break',{count}); stage='cond'; return;}
+    if(stage==='cond'){markDone('b-init'); activate('svg-break','b-cond'); const ok=count<=100; setStatus('status-break',`${count} ≤ 100 → ${ok}`,ok?'true':'false'); if(ok){activateEdge('svg-break','b-e3'); stage='if';} else {activateEdge('svg-break','b-e9'); stage='end';} return;}
+    if(stage==='if'){activate('svg-break','b-if'); const eq=count===4; setStatus('status-break',`count == 4? → ${eq}`,eq?'false':'true'); if(eq){activateEdge('svg-break','b-e4'); stage='break';} else {activateEdge('svg-break','b-e5'); stage='print';} return;}
+    if(stage==='break'){activate('svg-break','b-break'); activateEdge('svg-break','b-e8'); setStatus('status-break','💥 break — jump to END','false'); stage='end'; return;}
+    if(stage==='print'){activate('svg-break','b-print'); activateEdge('svg-break','b-e6'); out+=count+' '; document.getElementById('out-break').textContent=out; stage='upd'; return;}
+    if(stage==='upd'){activate('svg-break','b-upd'); activateEdge('svg-break','b-e7'); count++; setVars('vars-break',{count}); stage='cond'; return;}
+    if(stage==='end'){activate('svg-break','b-end'); setStatus('status-break','END','false'); done=true; clearInterval(timer);}
+  }
+  function start(){reset(); timer=setInterval(()=>{step(); if(done)clearInterval(timer);},700);}
+  return {reset,step,start};
+})();
+B.reset();
+
+// =============== CONTINUE ===============
+const C = (() => {
+  let count,out,stage,timer,done;
+  function reset(){
+    clearInterval(timer); timer=null;
+    count=null; out=''; stage='start'; done=false;
+    clearDone('svg-continue'); activateEdge('svg-continue',null);
+    setVars('vars-continue',{count:'—'});
+    document.getElementById('out-continue').textContent='';
+    setStatus('status-continue','Ready.');
+  }
+  function step(){
+    if(done)return;
+    if(stage==='start'){activate('svg-continue','c-start'); activateEdge('svg-continue','c-e1'); stage='init'; return;}
+    if(stage==='init'){markDone('c-start'); activate('svg-continue','c-init'); activateEdge('svg-continue','c-e2'); count=1; setVars('vars-continue',{count}); stage='cond'; return;}
+    if(stage==='cond'){markDone('c-init'); activate('svg-continue','c-cond'); const ok=count<=10; setStatus('status-continue',`${count} ≤ 10 → ${ok}`,ok?'true':'false'); if(ok){activateEdge('svg-continue','c-e3'); stage='upd';} else {activateEdge('svg-continue','c-e9'); stage='end';} return;}
+    if(stage==='upd'){activate('svg-continue','c-upd'); activateEdge('svg-continue','c-e4'); count++; setVars('vars-continue',{count}); stage='if'; return;}
+    if(stage==='if'){activate('svg-continue','c-if'); const eq=count===4; setStatus('status-continue',`count == 4? → ${eq}`, eq?'false':'true'); if(eq){activateEdge('svg-continue','c-e5'); stage='cont';} else {activateEdge('svg-continue','c-e6'); stage='print';} return;}
+    if(stage==='cont'){activate('svg-continue','c-cont'); activateEdge('svg-continue','c-e8'); setStatus('status-continue','↩ continue — back to condition','false'); stage='cond'; return;}
+    if(stage==='print'){activate('svg-continue','c-print'); activateEdge('svg-continue','c-e7'); out+=count+' '; document.getElementById('out-continue').textContent=out; stage='cond'; return;}
+    if(stage==='end'){activate('svg-continue','c-end'); setStatus('status-continue','END','false'); done=true; clearInterval(timer);}
+  }
+  function start(){reset(); timer=setInterval(()=>{step(); if(done)clearInterval(timer);},550);}
+  return {reset,step,start};
+})();
+C.reset();
+
+// =============== FOR ===============
+const F = (() => {
+  let vals,idx,out,stage,timer,done;
+  function reset(){
+    clearInterval(timer); timer=null;
+    vals=[1,2,3,4,5]; idx=-1; out=''; stage='start'; done=false;
+    clearDone('svg-for'); activateEdge('svg-for',null);
+    document.getElementById('iter-for').innerHTML = vals.map(v=>`<div class="var-box" data-v="${v}"><div class="name">slot</div><div class="val">${v}</div></div>`).join('');
+    document.getElementById('out-for').textContent='';
+    setStatus('status-for','Ready.');
+  }
+  function step(){
+    if(done)return;
+    if(stage==='start'){activate('svg-for','f-start'); activateEdge('svg-for','f-e1'); stage='iter'; return;}
+    if(stage==='iter'){markDone('f-start'); activate('svg-for','f-iter'); activateEdge('svg-for','f-e2'); setStatus('status-for','Iterator built from range(1,6)'); stage='next'; return;}
+    if(stage==='next'){markDone('f-iter'); activate('svg-for','f-next'); idx++; if(idx>=vals.length){activateEdge('svg-for','f-e5'); stage='end'; return;} const slots=document.querySelectorAll('#iter-for .var-box'); slots.forEach((s,k)=>{s.style.borderColor=k===idx?'#ffd166':(k<idx?'#2d3e50':'#06d6a0'); s.style.opacity=k<idx?0.4:1;}); setStatus('status-for',`i = ${vals[idx]}`,'true'); activateEdge('svg-for','f-e3'); stage='body'; return;}
+    if(stage==='body'){activate('svg-for','f-body'); out+=vals[idx]+' '; document.getElementById('out-for').textContent=out; activateEdge('svg-for','f-e4'); stage='next'; return;}
+    if(stage==='end'){activate('svg-for','f-end'); setStatus('status-for','Iterator exhausted. END.','false'); done=true; clearInterval(timer);}
+  }
+  function start(){reset(); timer=setInterval(()=>{step(); if(done)clearInterval(timer);},600);}
+  return {reset,step,start};
+})();
+F.reset();
+
+// =============== NESTED ===============
+const N = (() => {
+  let R,Cn,row,i,out,stage,timer,done,grid;
+  function reset(){
+    clearInterval(timer); timer=null;
+    R=parseInt(document.getElementById('rows-n').value)||3;
+    Cn=parseInt(document.getElementById('cols-n').value)||4;
+    row=0; i=1; out=''; stage='start'; done=false; grid=[];
+    clearDone('svg-nested'); activateEdge('svg-nested',null);
+    setVars('vars-nested',{row:'—',i:'—'});
+    document.getElementById('out-nested').textContent='';
+    setStatus('status-nested','Ready.');
+  }
+  function render(){document.getElementById('out-nested').textContent=grid.map(r=>r.join(' ')).join('\n');}
+  function step(){
+    if(done)return;
+    if(stage==='start'){activate('svg-nested','n-start'); activateEdge('svg-nested','n-e1'); stage='outer'; return;}
+    if(stage==='outer'){activate('svg-nested','n-outer'); if(row>=R){activateEdge('svg-nested','n-e7'); stage='end'; return;} activateEdge('svg-nested','n-e2'); setStatus('status-nested',`Outer: row=${row}`,'true'); grid[row]=grid[row]||[]; i=1; stage='inner'; return;}
+    if(stage==='inner'){activate('svg-nested','n-inner'); if(i>Cn){activateEdge('svg-nested','n-e5'); stage='nl'; return;} activateEdge('svg-nested','n-e3'); setVars('vars-nested',{row,i}); stage='body'; return;}
+    if(stage==='body'){activate('svg-nested','n-body'); grid[row].push(i); render(); activateEdge('svg-nested','n-e4'); setStatus('status-nested',`print(${i})`); i++; stage='inner'; return;}
+    if(stage==='nl'){activate('svg-nested','n-nl'); activateEdge('svg-nested','n-e6'); setStatus('status-nested',`row ${row} done → newline`); row++; stage='outer'; return;}
+    if(stage==='end'){activate('svg-nested','n-end'); setStatus('status-nested','🎉 Pattern complete!','false'); done=true; clearInterval(timer);}
+  }
+  function start(){reset(); timer=setInterval(()=>{step(); if(done)clearInterval(timer);},450);}
+  return {reset,step,start};
+})();
+N.reset();
+</script>
+</body>
+</html>
